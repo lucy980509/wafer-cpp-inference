@@ -216,7 +216,7 @@ Class 5: -20.402
 Class 6: -9.00057
 Class 7: 1.96966
 
-Predicted class: 4
+Predicted class: 4 (Loc)
 
 ========================================
 ```
