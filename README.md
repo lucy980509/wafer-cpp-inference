@@ -147,7 +147,6 @@ wafer-cpp-inference/
 │   └── test_wafer.png
 │
 ├── images/
-│   ├── architecture.png
 │   └── inference_result.png
 │
 ├── CMakeLists.txt
