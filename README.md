@@ -45,8 +45,6 @@ Wafer Defect Classification
 
 # Architecture
 
-![Architecture](images/architecture.png)
-
 The deployment pipeline consists of:
 
 ```
