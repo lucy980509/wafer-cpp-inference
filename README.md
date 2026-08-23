@@ -207,14 +207,14 @@ Example output:
        Wafer Fault Prediction
 ========================================
 
-Class 0: -6.43398
-Class 1: -4.77504
-Class 2: -1.29985
-Class 3: -8.76927
-Class 4: 3.15065
-Class 5: -20.402
-Class 6: -9.00057
-Class 7: 1.96966
+Class 0 (Center): -6.43398
+Class 1 (Donut): -4.77504
+Class 2 (Edge-Loc): -1.29985
+Class 3 (Edge-Ring): -8.76927
+Class 4 (Loc): 3.15065
+Class 5 (Near-full): -20.402
+Class 6 (Random): -9.00057
+Class 7 (Scratch): 1.96966
 
 Predicted class: 4 (Loc)
 
