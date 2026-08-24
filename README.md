@@ -7,7 +7,7 @@ The trained model is exported to ONNX format and executed using ONNX Runtime.
 
 The project demonstrates an end-to-end machine learning deployment workflow:
 
-```
+```text
 PyTorch Model Training
           |
           v
@@ -27,7 +27,7 @@ After training, the model was exported into ONNX format and deployed with a C++ 
 
 The C++ pipeline reproduces the same preprocessing steps used during Python inference:
 
-```
+```text
 Input Wafer Image
         |
         v
@@ -47,7 +47,7 @@ Wafer Defect Classification
 
 The deployment pipeline consists of:
 
-```
+```text
 PyTorch CNN Model
 
         |
@@ -86,6 +86,7 @@ Wafer Defect Prediction
 - CMake build system
 - Native deployment of PyTorch-trained CNN model
 - Python and C++ numerical consistency validation
+- Inference latency benchmarking
 
 ---
 
@@ -93,7 +94,7 @@ Wafer Defect Prediction
 
 ## Input
 
-```
+```text
 Wafer image (.png)
 ```
 
@@ -101,7 +102,7 @@ Wafer image (.png)
 
 The C++ preprocessing pipeline:
 
-```
+```text
 Grayscale conversion
         |
         v
@@ -116,7 +117,7 @@ Resize image to 24 x 24
 
 ## Model Input
 
-```
+```text
 Tensor shape:
 
 [1, 1, 24, 24]
@@ -126,7 +127,7 @@ Tensor shape:
 
 The model predicts one of 8 wafer defect classes.
 
-```
+```text
 8-class wafer defect classification
 ```
 
@@ -134,7 +135,7 @@ The model predicts one of 8 wafer defect classes.
 
 # Project Structure
 
-```
+```text
 wafer-cpp-inference/
 
 ├── src/
@@ -198,7 +199,7 @@ Execute the inference application:
 
 Example output:
 
-```
+```text
 [SUCCESS] Image loaded: ../results/test_wafer.png
 
 [SUCCESS] ONNX model loaded!
@@ -225,6 +226,64 @@ Predicted class: 4 (Loc)
 
 ---
 
+# Performance Benchmark
+
+Inference performance was measured using two different approaches.
+
+## Benchmark Configuration
+
+- Runtime: ONNX Runtime C++
+- Input shape: 1 × 1 × 24 × 24
+- Warm-up runs: 10
+- Benchmark runs: 100
+
+## Results
+
+| Metric | Result |
+|---|---:|
+| ONNX Runtime latency | 0.0317 ms |
+| ONNX Runtime FPS | 31,506 |
+| End-to-End latency | 0.3735 ms |
+| End-to-End FPS | 2,677 |
+
+## Measurement Scope
+
+### ONNX Runtime Benchmark
+
+Measures only neural network execution:
+
+```text
+Tensor Input
+      |
+      v
+ONNX Runtime Inference
+      |
+      v
+Output
+```
+
+### End-to-End Pipeline Benchmark
+
+Measures the complete inference pipeline:
+
+```text
+Image Loading
+      |
+      v
+OpenCV Preprocessing
+      |
+      v
+Tensor Creation
+      |
+      v
+ONNX Runtime Inference
+      |
+      v
+Prediction
+```
+
+---
+
 # Numerical Consistency Validation
 
 The same ONNX model was tested using:
@@ -236,7 +295,7 @@ The same ONNX model was tested using:
 
 Result:
 
-```
+```text
 Prediction Match: True
 
 Maximum absolute difference:
@@ -247,7 +306,7 @@ The preprocessing pipeline was also verified between Python and C++.
 
 Python:
 
-```
+```text
 0: 0.0
 1: 0.0
 2: 0.0
@@ -262,7 +321,7 @@ Python:
 
 C++:
 
-```
+```text
 0: 0
 1: 0
 2: 0
