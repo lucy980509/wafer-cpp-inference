@@ -1,9 +1,8 @@
 # Wafer Defect Classification C++ Inference Engine
 
-A C++ inference pipeline for wafer defect classification using OpenCV and ONNX Runtime.
+A native C++ inference pipeline for semiconductor wafer defect classification using OpenCV and ONNX Runtime.
 
-This project deploys a PyTorch-trained CNN model into a native C++ application.
-The trained model is exported to ONNX format and executed using ONNX Runtime.
+This project deploys a CNN trained with PyTorch on the WM-811K wafer map dataset. The trained model is exported to ONNX format and executed in a native C++ inference environment.
 
 The project demonstrates an end-to-end machine learning deployment workflow:
 
@@ -15,17 +14,20 @@ PyTorch Model Training
           |
           v
 C++ Inference Deployment
+          |
+          v
+Performance Benchmark
 ```
 
 ---
 
 # Overview
 
-The CNN model was originally trained using PyTorch on the WM-811K wafer defect dataset.
+The CNN model was trained using PyTorch to classify semiconductor wafer defect patterns.
 
-After training, the model was exported into ONNX format and deployed with a C++ inference application.
+After training, the best-performing model was exported to ONNX format and deployed using a C++ inference application.
 
-The C++ pipeline reproduces the same preprocessing steps used during Python inference:
+The C++ pipeline reproduces the preprocessing steps used during Python inference:
 
 ```text
 Input Wafer Image
@@ -35,45 +37,43 @@ OpenCV Preprocessing
 (grayscale → float32 → normalization → resize 24x24)
         |
         v
+Tensor [1, 1, 24, 24]
+        |
+        v
 ONNX Runtime Inference
         |
         v
 Wafer Defect Classification
 ```
 
+The deployment pipeline was also validated by running the same ONNX model and input image through both Python and C++ ONNX Runtime environments.
+
 ---
 
 # Architecture
 
-The deployment pipeline consists of:
-
 ```text
-PyTorch CNN Model
-
-        |
-        | ONNX Export
-
-        v
-
-wafer_fault_cnn.onnx
-
-        |
-        v
-
-C++ Inference Application
-
-        |
-        +----------------+
-        |                |
-        v                v
-
-    OpenCV          ONNX Runtime
- Preprocessing       Inference
-
-        |
-        v
-
-Wafer Defect Prediction
+                PyTorch CNN
+                     |
+                     | ONNX Export
+                     v
+          wafer_fault_cnn.onnx
+                     |
+                     v
+        +-------------------------+
+        |   C++ Inference Engine  |
+        +-------------------------+
+                     |
+          +----------+----------+
+          |                     |
+          v                     v
+      OpenCV              ONNX Runtime
+   Preprocessing            Inference
+          |                     |
+          +----------+----------+
+                     |
+                     v
+          Wafer Defect Prediction
 ```
 
 ---
@@ -82,11 +82,13 @@ Wafer Defect Prediction
 
 - C++17 inference application
 - OpenCV-based image preprocessing
-- ONNX Runtime model inference
+- ONNX Runtime inference
 - CMake build system
-- Native deployment of PyTorch-trained CNN model
-- Python and C++ numerical consistency validation
-- Inference latency benchmarking
+- Native deployment of a PyTorch-trained CNN
+- Python/C++ numerical consistency validation
+- ONNX Runtime inference benchmarking
+- End-to-end pipeline benchmarking
+- 8-class wafer defect classification
 
 ---
 
@@ -100,10 +102,10 @@ Wafer image (.png)
 
 ## Preprocessing
 
-The C++ preprocessing pipeline:
+The C++ preprocessing pipeline consists of:
 
 ```text
-Grayscale conversion
+Grayscale Conversion
         |
         v
 Convert to float32
@@ -112,23 +114,31 @@ Convert to float32
 Normalize values to 0-1
         |
         v
-Resize image to 24 x 24
+Resize to 24 x 24
+        |
+        v
+Create Tensor [1, 1, 24, 24]
 ```
 
 ## Model Input
 
 ```text
-Tensor shape:
-
 [1, 1, 24, 24]
 ```
 
 ## Output
 
-The model predicts one of 8 wafer defect classes.
+The model predicts one of the following eight wafer defect classes:
 
 ```text
-8-class wafer defect classification
+0 -> Center
+1 -> Donut
+2 -> Edge-Loc
+3 -> Edge-Ring
+4 -> Loc
+5 -> Near-full
+6 -> Random
+7 -> Scratch
 ```
 
 ---
@@ -150,6 +160,7 @@ wafer-cpp-inference/
 ├── images/
 │   └── inference_result.png
 │
+├── benchmarks/
 ├── CMakeLists.txt
 └── README.md
 ```
@@ -168,39 +179,54 @@ wafer-cpp-inference/
 
 # Build
 
-Create build directory:
+From the project root:
 
 ```bash
-mkdir build
-cd build
+cmake -S . -B build
 ```
 
-Configure:
+Build the Debug configuration:
 
 ```bash
-cmake ..
+cmake --build build --config Debug
 ```
 
-Build:
+The executable is generated at:
 
-```bash
-cmake --build .
+```text
+build/Debug/wafer_inference.exe
 ```
 
 ---
 
 # Run
 
-Execute the inference application:
+From the project root:
 
 ```bash
-.\Debug\wafer_inference.exe
+build\Debug\wafer_inference.exe
 ```
 
-Example output:
+The application loads the test wafer image from:
 
 ```text
-[SUCCESS] Image loaded: ../results/test_wafer.png
+results/test_wafer.png
+```
+
+and the ONNX model from:
+
+```text
+models/wafer_fault_cnn.onnx
+```
+
+---
+
+# Example Inference Result
+
+The deployed C++ application successfully loaded the updated ONNX model and produced the following output:
+
+```text
+[SUCCESS] Image loaded: results/test_wafer.png
 
 [SUCCESS] ONNX model loaded!
 
@@ -208,14 +234,14 @@ Example output:
        Wafer Fault Prediction
 ========================================
 
-Class 0 (Center): -6.43398
-Class 1 (Donut): -4.77504
-Class 2 (Edge-Loc): -1.29985
-Class 3 (Edge-Ring): -8.76927
-Class 4 (Loc): 3.15065
-Class 5 (Near-full): -20.402
-Class 6 (Random): -9.00057
-Class 7 (Scratch): 1.96966
+Class 0 (Center): -1.92753
+Class 1 (Donut): -1.52871
+Class 2 (Edge-Loc): 0.0786493
+Class 3 (Edge-Ring): -5.8068
+Class 4 (Loc): 3.14454
+Class 5 (Near-full): -16.1514
+Class 6 (Random): -6.97627
+Class 7 (Scratch): 2.31458
 
 Predicted class: 4 (Loc)
 
@@ -228,43 +254,48 @@ Predicted class: 4 (Loc)
 
 # Performance Benchmark
 
-Inference performance was measured using two different approaches.
+Inference performance was measured using two separate benchmarks.
 
 ## Benchmark Configuration
 
 - Runtime: ONNX Runtime C++
-- Input shape: 1 × 1 × 24 × 24
-- Warm-up runs: 10
-- Benchmark runs: 100
+- Input shape: `1 × 1 × 24 × 24`
+- Warm-up runs: 100
+- Benchmark runs: 1000
 
 ## Results
 
 | Metric | Result |
 |---|---:|
-| ONNX Runtime latency | 0.0317 ms |
-| ONNX Runtime FPS | 31,506 |
-| End-to-End latency | 0.3735 ms |
-| End-to-End FPS | 2,677 |
+| ONNX Runtime latency | 0.031566 ms |
+| ONNX Runtime throughput | 31,679.7 FPS |
+| End-to-End latency | 0.334094 ms |
+| End-to-End throughput | 2,993.17 FPS |
 
-## Measurement Scope
+## ONNX Runtime Benchmark
 
-### ONNX Runtime Benchmark
-
-Measures only neural network execution:
+The ONNX Runtime benchmark measures neural network execution only:
 
 ```text
 Tensor Input
       |
       v
-ONNX Runtime Inference
+ONNX Runtime
       |
       v
-Output
+Model Output
 ```
 
-### End-to-End Pipeline Benchmark
+### Result
 
-Measures the complete inference pipeline:
+```text
+Average latency: 0.031566 ms
+FPS: 31679.7
+```
+
+## End-to-End Pipeline Benchmark
+
+The end-to-end benchmark includes the complete inference pipeline:
 
 ```text
 Image Loading
@@ -282,59 +313,91 @@ ONNX Runtime Inference
 Prediction
 ```
 
+### Result
+
+```text
+Average latency: 0.334094 ms
+FPS: 2993.17
+```
+
+The separation between inference-only and end-to-end measurements helps distinguish neural network execution time from the overhead introduced by image preprocessing and tensor preparation.
+
 ---
 
 # Numerical Consistency Validation
 
-The same ONNX model was tested using:
+The updated ONNX model was evaluated using both Python and C++ ONNX Runtime with the same input wafer image.
+
+## Prediction Comparison
 
 | Runtime | Prediction |
 |---|---|
-| Python ONNX Runtime | Class 4 |
-| C++ ONNX Runtime | Class 4 |
+| Python ONNX Runtime | Class 4 (Loc) |
+| C++ ONNX Runtime | Class 4 (Loc) |
 
-Result:
+Both environments produced the same predicted class.
 
-```text
-Prediction Match: True
-
-Maximum absolute difference:
-2.1457672e-06
-```
-
-The preprocessing pipeline was also verified between Python and C++.
-
-Python:
+## Python ONNX Runtime
 
 ```text
-0: 0.0
-1: 0.0
-2: 0.0
-3: 0.0
-4: 0.0
-5: 0.0
-6: 0.0
-7: 0.0
-8: 0.328125
-9: 0.21875
+Class 0 (Center): -1.92753243
+Class 1 (Donut): -1.52870536
+Class 2 (Edge-Loc): 0.07864933
+Class 3 (Edge-Ring): -5.80679607
+Class 4 (Loc): 3.14454126
+Class 5 (Near-full): -16.15137672
+Class 6 (Random): -6.97626686
+Class 7 (Scratch): 2.31458020
+
+Predicted class: 4 (Loc)
 ```
 
-C++:
+## C++ ONNX Runtime
 
 ```text
-0: 0
-1: 0
-2: 0
-3: 0
-4: 0
-5: 0
-6: 0
-7: 0
-8: 0.328125
-9: 0.21875
+Class 0 (Center): -1.92753
+Class 1 (Donut): -1.52871
+Class 2 (Edge-Loc): 0.0786493
+Class 3 (Edge-Ring): -5.8068
+Class 4 (Loc): 3.14454
+Class 5 (Near-full): -16.1514
+Class 6 (Random): -6.97627
+Class 7 (Scratch): 2.31458
+
+Predicted class: 4 (Loc)
 ```
 
-The ONNX inference results between Python and C++ were numerically consistent.
+The outputs match to the displayed precision, and both runtimes produce the same prediction.
+
+The Python and C++ preprocessing pipelines were also verified using the same input image and produced matching normalized pixel values for the inspected samples.
+
+---
+
+# Deployment Validation
+
+The deployment process was validated across the complete model conversion pipeline:
+
+```text
+PyTorch Training
+      |
+      v
+Best Model
+      |
+      v
+ONNX Export
+      |
+      v
+Python ONNX Runtime
+      |
+      | Same model + same input
+      v
+C++ ONNX Runtime
+      |
+      v
+Matching Prediction
+```
+
+This confirms that the exported ONNX model can be executed successfully in the native C++ environment while preserving the classification result observed in Python.
 
 ---
 
@@ -342,6 +405,6 @@ The ONNX inference results between Python and C++ were numerically consistent.
 
 ## Model Training Repository
 
-PyTorch training and evaluation pipeline:
+The PyTorch training, validation, test evaluation, and ONNX export pipeline is available here:
 
 https://github.com/lucy980509/wafer-defect-classification
