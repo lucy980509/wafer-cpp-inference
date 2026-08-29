@@ -16,10 +16,10 @@ int main()
     // =========================================================
 
     const std::string imagePath =
-        "../results/test_wafer.png";
+        "results/test_wafer.png";
 
     const std::wstring modelPath =
-        L"../models/wafer_fault_cnn.onnx";
+        L"models/wafer_fault_cnn.onnx";
 
 
     // =========================================================
